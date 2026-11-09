@@ -1095,6 +1095,7 @@ export default function Home() {
           <h1>Sprite Sheet Creator</h1>
         </div>
         <p>Create pixel art sprite sheets using fal.ai</p>
+        <p><a href="/studio" style={{ color: "#a5b4fc", textDecoration: "underline" }}>Open Offline Video → Game Asset Studio</a></p>
       </header>
 
       {/* Steps indicator */}
