@@ -90,6 +90,7 @@ export default function Studio() {
  const focused=frames.find(f=>f.id===selected);
  const preview=active.length?active[tick%active.length]:null;
  const update=(id:string,patch:Partial<Frame>)=>setFrames(fs=>fs.map(f=>f.id===id?{...f,...patch}:f));
+ useEffect(()=>{if("serviceWorker" in navigator)navigator.serviceWorker.register("/studio-sw.js").catch(()=>{});},[]);
  useEffect(()=>{const stored=localStorage.getItem("asset-studio-notes-v1");if(stored){try{setNotes(JSON.parse(stored));}catch{}}},[]);
  useEffect(()=>{localStorage.setItem("asset-studio-notes-v1",JSON.stringify(notes));},[notes]);
  useEffect(()=>{if(!playing||!active.length)return;let t=0;let timer:number;const run=()=>{setTick(i=>(i+1)%active.length);t=(t+1)%active.length;timer=window.setTimeout(run,active[t].duration);};timer=window.setTimeout(run,active[0].duration);return()=>window.clearTimeout(timer);},[playing,active]);
@@ -270,4 +271,4 @@ const gameExample = String.raw`<!doctype html>
   }requestAnimationFrame(draw);
  }requestAnimationFrame(draw);
 })().catch(e=>document.body.insertAdjacentText('beforeend','Unable to load assets: '+e.message));
-<\/script></html>`;
+</script></html>`;
