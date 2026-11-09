@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:studio": "node --test tests/studio-fixtures.test.mjs"
   },
   "dependencies": {
     "@fal-ai/client": "^1.2.1",
