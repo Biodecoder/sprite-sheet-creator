@@ -100,6 +100,7 @@ export default function Studio() {
   const url=URL.createObjectURL(file);setVideoUrl(url);setSource({filename:file.name,kind:"video",importedAt:new Date().toISOString()});setError("");
  }
  function seek(v:HTMLVideoElement,time:number):Promise<void>{
+  if(Math.abs(v.currentTime-time)<0.0005&&v.readyState>=2)return Promise.resolve();
   return new Promise((resolve,reject)=>{
    const timeout=window.setTimeout(()=>{cleanup();reject(new Error("Video seek timed out"));},8000);
    function cleanup(){window.clearTimeout(timeout);v.removeEventListener("seeked",done);v.removeEventListener("error",fail);}
@@ -138,7 +139,7 @@ export default function Studio() {
     const name=f.animation+"_"+String(index).padStart(3,"0");
     if(!groups[f.animation])groups[f.animation]={frames:[],durations:[],loop:true};
     groups[f.animation].frames.push(name);groups[f.animation].durations.push(f.duration);
-    entries.push({name,animation:f.animation,x:col*width,y:row*height,w:width,h:height,durationMs:f.duration,anchor:{x:0.5,y:1},sourceTimeSeconds:f.sourceTime,note:f.note});
+    entries.push({name,path:"frames/"+name+".png",animation:f.animation,x:col*width,y:row*height,w:width,h:height,durationMs:f.duration,anchor:{x:0.5,y:1},sourceTimeSeconds:f.sourceTime,note:f.note});
     files.push({name:"frames/"+name+".png",bytes:binaryData(f.png)});
    }
    const atlasPng=atlas.toDataURL("image/png");
