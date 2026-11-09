@@ -248,7 +248,7 @@ export default function Studio() {
   <footer style={{marginTop:24,...css.muted,fontSize:13}}>Offline after the app shell is cached; video codecs must be supported by your browser. Files are processed locally and exported on demand.</footer>
  </main>;
 }
-const gameExample = String.raw\`<!doctype html>
+const gameExample = String.raw`<!doctype html>
 <html lang="en"><meta charset="utf-8"><title>Exported Sprite Demo</title>
 <style>body{background:#10131c;color:white;font:16px system-ui;text-align:center}canvas{width:min(90vw,700px);image-rendering:pixelated;background:linear-gradient(#26415b 75%,#395e42 75%)}</style>
 <h1>Exported Sprite Demo</h1><p>A/D move · W jump · J attack · Space idle</p><canvas width="700" height="320"></canvas>
@@ -270,4 +270,4 @@ const gameExample = String.raw\`<!doctype html>
   }requestAnimationFrame(draw);
  }requestAnimationFrame(draw);
 })().catch(e=>document.body.insertAdjacentText('beforeend','Unable to load assets: '+e.message));
-<\/script></html>\`;
+<\/script></html>`;
