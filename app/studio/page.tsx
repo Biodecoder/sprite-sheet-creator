@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { atlasPositions, binaryData, zip } from "./asset-core.mjs";
 
 type Animation = "idle" | "walk" | "jump" | "attack" | "custom";
 type Source = { filename: string; kind: "video" | "sheet" | "image"; importedAt: string };
@@ -42,25 +43,6 @@ function normalize(source: HTMLCanvasElement, w: number, h: number, keyBackgroun
   const dw=Math.max(1,Math.round(bw*scale)),dh=Math.max(1,Math.round(bh*scale));
   c.drawImage(source,left,top,bw,bh,Math.round((w-dw)/2),h-4-dh,dw,dh);
   return out.toDataURL("image/png");
-}
-function binaryData(url:string): Uint8Array {const raw=atob(url.split(",")[1]);return Uint8Array.from(raw,c=>c.charCodeAt(0));}
-function crc32(data:Uint8Array) {let c=0xffffffff;for(const byte of data){c^=byte;for(let j=0;j<8;j++)c=(c>>>1)^((c&1)?0xedb88320:0);}return (c^0xffffffff)>>>0;}
-function zip(files:{name:string;bytes:Uint8Array}[]):Blob {
-  const chunks:Uint8Array[]=[];const central:Uint8Array[]=[];let offset=0;
-  const e=new TextEncoder();
-  const u16=(v:DataView,p:number,n:number)=>v.setUint16(p,n,true);
-  const u32=(v:DataView,p:number,n:number)=>v.setUint32(p,n>>>0,true);
-  for(const f of files) {
-    const name=e.encode(f.name),crc=crc32(f.bytes),local=new Uint8Array(30+name.length),v=new DataView(local.buffer);
-    u32(v,0,0x04034b50);u16(v,4,20);u16(v,6,0x800);u16(v,8,0);u32(v,14,crc);u32(v,18,f.bytes.length);u32(v,22,f.bytes.length);u16(v,26,name.length);local.set(name,30);
-    chunks.push(local,f.bytes);
-    const entry=new Uint8Array(46+name.length),d=new DataView(entry.buffer);
-    u32(d,0,0x02014b50);u16(d,4,20);u16(d,6,20);u16(d,8,0x800);u32(d,16,crc);u32(d,20,f.bytes.length);u32(d,24,f.bytes.length);u16(d,28,name.length);u32(d,42,offset);entry.set(name,46);central.push(entry);
-    offset+=local.length+f.bytes.length;
-  }
-  const centralLength=central.reduce((n,a)=>n+a.length,0),end=new Uint8Array(22),v=new DataView(end.buffer);
-  u32(v,0,0x06054b50);u16(v,8,files.length);u16(v,10,files.length);u32(v,12,centralLength);u32(v,16,offset);
-  return new Blob([...chunks,...central,end],{type:"application/zip"});
 }
 function download(blob:Blob,name:string){const href=URL.createObjectURL(blob);const a=document.createElement("a");a.href=href;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(href),15000);}
 function natural(n:number){return Number.isFinite(n)?Math.max(1,Math.floor(n)):1;}
@@ -145,7 +127,7 @@ export default function Studio() {
   try{
    const accepted=frames.filter(f=>!f.rejected);if(!accepted.length)throw new Error("No accepted frames to export");
    const counts:Record<string,number>={};for(const f of accepted)counts[f.animation]=(counts[f.animation]||0)+1;
-   const columns=Math.min(8,accepted.length),rows=Math.ceil(accepted.length/columns),atlas=canvas(columns*width,rows*height);
+   const layout=atlasPositions(accepted.length,width,height);const {columns,rows}=layout,atlas=canvas(layout.width,layout.height);
    const ctx=atlas.getContext("2d")!;ctx.imageSmoothingEnabled=false;
    const groups:Record<string,{frames:string[];durations:number[];loop:boolean}>={};
    const entries=[] as any[];const files:{name:string;bytes:Uint8Array}[]=[];
